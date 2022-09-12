@@ -1,0 +1,136 @@
+
+name: SP-Newifi3-Lean+
+
+on:
+# 定时触发
+  schedule:
+    - cron: 0 19 * * 5
+
+# release触发
+  release:
+    types: [published]
+
+# 点赞触发
+  watch:
+    types: [started]
+
+# 编辑触发
+  push:
+    branches: 
+      - main
+
+# config触发
+#  paths:
+#    - '.config'
+
+env:
+  REPO_URL: https://github.com/coolsnowwolf/lede
+  REPO_BRANCH: master
+  DIY_SH: SP+OpenWrt-Lean+.sh
+  SSH_ACTIONS: false        # SSH 连接 Actions 功能
+  UPLOAD_BIN_DIR: true      # 上传 bin 目录。即包含所有 ipk 文件和固件的目录
+  UPLOAD_FIRMWARE: true     # 上传固件的目录
+  UPLOAD_RELEASE: false
+  TZ: Asia/Shanghai
+
+jobs:
+  build_openwrt:
+    name: 编译OpenWrt固件
+    if: github.event.repository.owner.id == github.event.sender.id
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 校验本地文件
+      uses: actions/checkout@main
+
+    - name: 初始化编译环境
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+          sudo apt update -y
+          sudo apt full-upgrade -y
+          sudo apt-get -qq remove --purge mysql* php* google* firefox ghc azure-cli dotnet* powershell ruby-full zulu* hhvm llvm*
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /var/lib/docker
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/hostedtoolcache/go /opt/hostedtoolcache/Ruby /opt/hostedtoolcache/node
+          sudo apt update
+          sudo apt full-upgrade -y
+          sudo apt install -y ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential bzip2 ccache cmake cpio curl device-tree-compiler fastjar flex gawk gettext gcc-multilib g++-multilib git gperf haveged help2man intltool libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses5-dev libncursesw5-dev libreadline-dev libssl-dev libtool lrzsz mkisofs msmtp nano ninja-build p7zip p7zip-full patch pkgconf python2.7 python3 python3-pip qemu-utils rsync scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev
+          sudo apt-get -y autoremove --purge
+          sudo apt-get clean
+          df -h
+
+    - name: 克隆源代码
+      run: |
+        git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
+
+    - name: 更改时区、生成编译时间
+      run: |
+        sudo timedatectl set-timezone "$TZ"
+        echo "FILE_DATE=_$(date +"%Y.%m.%d.%H.%M")" >> $GITHUB_ENV
+
+    - name: 更新源并创建配置文件
+      run: |
+        [ -e files ] && mv files openwrt/files
+        chmod +x $DIY_SH
+        cd openwrt
+        ../$DIY_SH
+        make defconfig
+
+    #- name: 开启SSH远程连接
+      #uses: P3TERX/debugger-action@main
+      #if: env.SSH_ACTIONS == 'true'
+      
+    - name: 重复的包检测
+      run: |
+        cd openwrt
+        echo "重复的包检测：👇"
+        ./scripts/feeds list  | awk '{if(a[$1]){print $1}else{a[$1]++}}'
+        echo "重复的包检测：👆"
+        ./scripts/feeds list  | awk '{if(a[$1]){print $1}else{a[$1]++}}' | while read pkg_name;do
+        find feeds/ -maxdepth 4 -type d -name $pkg_name | \
+        awk -F/ 'NR==1{a[$2]=$0};NR==2{if(!a[$2]){for(i in a){if(a[i]){printf "%s/ %s\n",$0,a[i]}}}}' | \
+        xargs -r -n2 echo  👉 rsync -av --delete
+        find feeds/ -maxdepth 4 -type d -name $pkg_name | \
+        awk -F/ 'NR==1{a[$2]=$0};NR==2{if(!a[$2]){for(i in a){if(a[i]){printf "%s/ %s\n",$0,a[i]}}}}' | \
+        xargs -r -n2 rsync -av --delete
+        done
+
+    - name: 下载软件包
+      id: package
+      run: |
+        cd openwrt
+        make defconfig
+        make download -j8
+
+    - name: 编译固件
+      id: compile
+      run: |
+        cd openwrt
+        echo -e "$(nproc) thread compile"
+        make -j$(nproc) || make -j1 || make -j1 V=s
+        echo "::set-output name=status::success"
+
+    - name: 上传BIN目录
+      uses: actions/upload-artifact@main
+      if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
+      with:
+        name: Lean+_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+        path: openwrt/bin
+
+    - name: 整理文件
+      id: organize
+      if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
+      run: |
+        cd openwrt/bin/targets/*/*
+        rm -rf packages
+        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+        echo "::set-output name=status::success"
+
+    - name: 上传固件
+      uses: actions/upload-artifact@main
+      if: steps.organize.outputs.status == 'success' && !cancelled()
+      with:
+        name: Lean+_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+        path: ${{ env.FIRMWARE }}
