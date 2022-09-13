@@ -121,7 +121,7 @@ jobs:
       if: (!cancelled())
       run: |
         df -hT
-        tree
+        tree -L 4
 
 
     - name: 上传BIN目录
