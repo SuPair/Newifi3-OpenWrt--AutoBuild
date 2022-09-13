@@ -121,8 +121,6 @@ jobs:
       if: (!cancelled())
       run: |
         df -hT
-        tree -L 4
-
 
     - name: 上传BIN目录
       uses: actions/upload-artifact@main
@@ -130,6 +128,11 @@ jobs:
       with:
         name: Lean+_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
         path: openwrt/bin
+
+    - name: 查看目录树
+      if: (!cancelled())
+      run: |
+        tree -L 4
 
     - name: 整理文件
       id: organize
