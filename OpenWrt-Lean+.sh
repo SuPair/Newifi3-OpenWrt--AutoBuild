@@ -95,9 +95,9 @@ CONFIG_TARGET_ramips_mt7621_DEVICE_d-team_newifi-d2=y
 EOF
 
 # 固件压缩:
-#cat >> .config <<EOF
-#CONFIG_TARGET_IMAGES_GZIP=y
-#EOF
+cat >> .config <<EOF
+CONFIG_TARGET_IMAGES_GZIP=y
+EOF
 
 # 无线驱动(开源)
 cat >> .config <<EOF
@@ -128,14 +128,14 @@ CONFIG_PACKAGE_ip6tables=y
 EOF
 
 # 多文件系统支持:
-# cat >> .config <<EOF
-# CONFIG_PACKAGE_kmod-fs-nfs=y
-# CONFIG_PACKAGE_kmod-fs-nfs-common=y
-# CONFIG_PACKAGE_kmod-fs-nfs-v3=y
-# CONFIG_PACKAGE_kmod-fs-nfs-v4=y
-# CONFIG_PACKAGE_kmod-fs-ntfs=y
-# CONFIG_PACKAGE_kmod-fs-squashfs=y
-# EOF
+cat >> .config <<EOF
+CONFIG_PACKAGE_kmod-fs-nfs=y
+CONFIG_PACKAGE_kmod-fs-nfs-common=y
+CONFIG_PACKAGE_kmod-fs-nfs-v3=y
+CONFIG_PACKAGE_kmod-fs-nfs-v4=y
+CONFIG_PACKAGE_kmod-fs-ntfs=y
+CONFIG_PACKAGE_kmod-fs-squashfs=y
+EOF
 
 # USB3.0支持:
 # cat >> .config <<EOF
@@ -150,27 +150,27 @@ EOF
 cat >> .config <<EOF
 #CONFIG_PACKAGE_luci-app-oaf=y #应用过滤
 #CONFIG_PACKAGE_luci-app-clash=y
-CONFIG_PACKAGE_luci-app-openclash=y #OpenClash
+#CONFIG_PACKAGE_luci-app-openclash=y #OpenClash
 #CONFIG_PACKAGE_luci-app-luci-app-vssr=y
 #CONFIG_PACKAGE_luci-app-serverchan=y #微信推送
 #CONFIG_PACKAGE_luci-app-eqos=y #IP限速
-#CONFIG_PACKAGE_luci-app-adguardhome=y #ADguardhome
-#CONFIG_PACKAGE_AdGuardHome=y
+CONFIG_PACKAGE_luci-app-adguardhome=y #ADguardhome
+CONFIG_PACKAGE_AdGuardHome=y
 EOF
 
 # ShadowsocksR插件:
-cat >> .config <<EOF
+#cat >> .config <<EOF
 #CONFIG_PACKAGE_xray=y
 #CONFIG_XRAY_EXCLUDE_ASSETS=y
 #CONFIG_XRAY_COMPRESS_UPX=y
 #CONFIG_v2ray-plugin_INCLUDE_GOPROXY=y
-CONFIG_PACKAGE_luci-app-ssr-plus=n
+#CONFIG_PACKAGE_luci-app-ssr-plus=n
 #CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Xray=n
 #CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_NaiveProxy=n
 #CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_Trojan=n
 #CONFIG_PACKAGE_luci-app-ssr-plus_INCLUDE_ShadowsocksR_Server=n
 #CONFIG_PACKAGE_luci-app-v2ray-server=n
-EOF
+#EOF
 
 # Passwall插件:
 #cat >> .config <<EOF
@@ -187,22 +187,22 @@ EOF
 # 常用LuCI插件:
 cat >> .config <<EOF
 #CONFIG_PACKAGE_luci-app-adbyby-plus=y #adbyby去广告
-CONFIG_PACKAGE_luci-app-guest-wifi=y
+#CONFIG_PACKAGE_luci-app-guest-wifi=y
 #CONFIG_PACKAGE_luci-app-ttyd=y
 #CONFIG_PACKAGE_luci-app-easymesh=y
 #CONFIG_PACKAGE_luci-app-smartdns=y
 #CONFIG_PACKAGE_luci-app-mosdns=y
 #CONFIG_PACKAGE_luci-app-webadmin=n #Web管理页面设置
-#CONFIG_PACKAGE_luci-app-ddns=y #DDNS服务
+CONFIG_PACKAGE_luci-app-ddns=y #DDNS服务
 CONFIG_PACKAGE_luci-app-vlmcsd=n #KMS激活服务器
 #CONFIG_PACKAGE_luci-app-filetransfer=y #系统-文件传输
 CONFIG_PACKAGE_luci-app-autoreboot=y #定时重启
-#CONFIG_PACKAGE_luci-app-upnp=y #通用即插即用UPnP(端口自动转发)
+CONFIG_PACKAGE_luci-app-upnp=y #通用即插即用UPnP(端口自动转发)
 #CONFIG_PACKAGE_luci-app-accesscontrol=y #上网时间控制
 CONFIG_PACKAGE_luci-app-wol=y #网络唤醒
-#CONFIG_PACKAGE_luci-app-frpc=y #Frp内网穿透
-#CONFIG_PACKAGE_luci-app-nlbwmon=n #宽带流量监控
-#CONFIG_PACKAGE_luci-app-wrtbwmon=y
+CONFIG_PACKAGE_luci-app-frpc=y #Frp内网穿透
+CONFIG_PACKAGE_luci-app-nlbwmon=n #宽带流量监控
+CONFIG_PACKAGE_luci-app-wrtbwmon=y
 #CONFIG_PACKAGE_automount=y
 #CONFIG_PACKAGE_coreutils-base64=y
 #CONFIG_PACKAGE_luci-app-commands=y
@@ -234,9 +234,15 @@ CONFIG_PACKAGE_luci-app-unblockneteasemusic=y
 #
 # CONFIG_PACKAGE_luci-app-v2ray-server is not set #V2ray服务器
 # CONFIG_PACKAGE_luci-app-pptp-server is not set #PPTP VPN 服务器
-# CONFIG_PACKAGE_luci-app-ipsec-vpnd is not set #ipsec VPN服务
+CONFIG_PACKAGE_luci-app-ipsec-vpnd=y #ipsec VPN服务
+CONFIG_PACKAGE_luci-app-wireguard=y #wireguard
+CONFIG_PACKAGE_luci-app-zerotier=y #ZeroTier内网穿透
 # CONFIG_PACKAGE_luci-app-openvpn-server is not set #openvpn服务
 # CONFIG_PACKAGE_luci-app-softethervpn is not set #SoftEtherVPN服务器
+# 安防
+CONFIG_PACKAGE_luci-app-noddos=y #NodDOS Clients 阻止DDoS攻击
+CONFIG_PACKAGE_luci-app-firewall=y#添加防火墙
+CONFIG_PACKAGE_luci-app-dnscrypt-proxy=y #DNS
 #
 # 文件共享相关(禁用):
 #
